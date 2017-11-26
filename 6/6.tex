@@ -3,13 +3,16 @@
 \usepackage{../common}
 \usepackage{../pagesetup}
 
-
+\usepackage{hyperref}
+\usepackage{bm}
+\usepackage{bbm}
+\usepackage{mathtools}
 
 \begin{document}
-\lecture{6}{September 20}{Sasha Rush}{Meena Jagadeesan, Yufeng Ling, Tomoka Kan, Wenting Cai}{Exponential Families}
+\lecture{6}{September 20}{Sasha Rush}{Meena Jagadeesan, Yufeng Ling, Tomoka Kan, Wenting Cai, Richard Wang}{Exponential Families}
 
 \subsection{Introduction}
-(Wainwright and Jordan (textbook) presents a more detailed coverage of the material in this lecture.)
+(\href{https://people.eecs.berkeley.edu/~wainwrig/Papers/WaiJor08_FTML.pdf}{Wainwright and Jordan} presents a more detailed coverage of the material in this lecture, beginning in section 3.2.)
 
 \medskip
 
@@ -27,24 +30,27 @@
 We will focus on coming up with a general form for Discrete and MVN through exponential families. We will also come up with a general form for classification and linear regression through generalized linear models. 
 
 \subsection{Definition of Exponential Family}
-The definition is
+A pdf is said to belong to the exponential family if it has the form:
 \begin{align*}
 p(x \mid \theta(\mu)) &= \frac{1}{Z(\theta)} h(x) \exp\{\theta^T \phi(x)\} \\
-&= h(x) \exp{\theta^T \phi(x) - A(\theta)}
+&= h(x) \exp\{\theta^T \phi(x) - A(\theta)\}
 \end{align*}
 where
 \medskip
 
+\begin{center}
 \begin{tabular}{r | l}
     $\mu$ & mean parameters \\ \hline
     $\theta(\mu)$ & natural / canonical / exponential parameters \\ \hline
-    $Z(\theta)A(\theta)$ & also written as $Z(\theta(\mu))$ or $Z(\mu)$, the partition function and log partition \\ \hline
+    $Z(\theta), A(\theta)$ & also written as $Z(\theta(\mu))$ or $Z(\mu)$, the partition function and log partition function \\ \hline
     $\phi(x)$ & sufficient statistics of $x$, potential functions, ``features'' \\ \hline
-    $h(x)$ & scaling term, in most cases, we have $h(x) = 1$
+    $h(x)$ & scaling term; in most cases, we have $h(x) = 1$
 \end{tabular}
+\end{center}
+
 \medskip
 
-\noindent Note that there is ``minimal form'' and ``overcomplete form''.
+\noindent Note that representations in the exponential family form can be ``minimal" or ``overcomplete". A representation is \textbf{minimal} if there is a unique $\theta$ associated with the distribution. A representation is \textbf{overcomplete} if there is a linear dependence between the features. For example, in the case of the Bernoulli distribution, if we let $\phi(x) = [\mathbbm{1}\{x = 0\}, \mathbbm{1}\{x = 1\}]$, we know $1 = \mathbbm{1}\{x = 0\} + \mathbbm{1}\{x = 1\}$ and $\theta$ would not be uniquely identifiable.
 
 \subsection{Examples of Exponential Families}
 
@@ -53,8 +59,8 @@ First, we consider the Bernoulli as an exponential family. Like last lecture, we
 
 \begin{align*}    
 \text{Ber}(x | \mu) &= \mu^x(1-\mu)^{(1-x)} \\
- &= \exp{x\log \mu + (1-x)\log(1-\mu)} \\
- &= \underbrace{}_{h(x)}\exp{ \underbrace{\log\left(\frac{\mu }{1- \mu}\right)}_{\theta} \underbrace{x}_{\phi(x)} + \underbrace{\log (1- \mu)}_{-A(\mu)}}
+ &= \exp\{x\log \mu + (1-x)\log(1-\mu)\} \\
+ &= \underbrace{1}_{h(x)}\exp\{\underbrace{\log\left(\frac{\mu }{1- \mu}\right)}_{\theta} \underbrace{x}_{\phi(x)} + \underbrace{\log (1- \mu)}_{-A(\mu)}\}
 \end{align*}
 
 For the \textbf{minimal form}, we have 
@@ -74,7 +80,7 @@ For the \textbf{overcomplete form}, we have
     \theta &= \begin{bmatrix} \log \mu \\ \log (1- \mu) \end{bmatrix}
 \end{align*}
 
-For the Categorical/Multinouilli distribution, we have
+For the Categorical/Multinoulli distribution, we have
 $$\theta = \begin{bmatrix}
 \log \mu_1 \\
 \vdots \\
@@ -83,7 +89,8 @@ $$\theta = \begin{bmatrix}
 $$
 where $\sum_{c} \mu_c = 1$.
 
-Side note: Writing out in overcomplete form usually comes with some restraints.
+% Side note: Writing out in overcomplete form usually comes with some restraints.
+Side note: writing the distribution in an overcomplete form means that the features are linearly dependent.
 
 \subsubsection{Univariate Gaussians}
 
@@ -105,13 +112,10 @@ A(\theta) &= - \frac12 \log( -2 \theta_2) - \frac{\theta_1^2}{4 \theta_2}
 \end{align*}
 
 \subsubsection{Bad distributions}
-Two simple distributions that do not fit this form are the uniform distribution $\text{Uniform}(0,1)$ (check this as an exercise), and the Student-T distribution.
+Two simple distributions that do not fit this form are the uniform distribution $\text{Uniform}(a, b)$, and the Student-T distribution. The reason that the uniform distribution does not belong in the exponential family is because the support of the uniform distribution depends on the parameters, which is not allowed.
 
 \subsection{Properties of Exponential Families}
-Most inference problems involve a mapping between natural parameters and mean parameters, so this is a natural framework. 
-
-
-Here are three properties of exponential families:
+Most inference problems involve a mapping between natural parameters and mean parameters, so this is a natural framework. Here are three properties of exponential families:
 
 \paragraph{Property 1} Derivatives of $A(\theta)$ provide us the cumulants of the distribution $\mathbb{E}(\phi(x))$, $\text{var}(\phi(x))$:
 \begin{proof}
@@ -132,8 +136,12 @@ The same property holds for multivariates (refer to textbook for proof).
 \[A(\theta) = \theta + \log(1 + e^{-\theta})\]
 \[\frac{d A}{d\theta} = 1 - \frac{e^{-\theta}}{1 + e^{-\theta}} = \underbrace{\frac{1}{1 + e^{-\theta}}}_{\text{sigmoid}} = \sigma(\theta) = \mu \]
 
-\textbf{Univariate Normal} Left as exercise.
-\paragraph{Property 2} MLE has a nice form (through ``moment matching'')
+\textbf{Univariate Normal}
+\begin{exercise}
+The univariate normal distribution (parameterized with $\mu, \sigma^{2}$) can be written in exponential family form such that its log partition function is $A(\bm{\theta}) = -\frac{\theta_{1}^{2}}{4\theta_{2}} - \frac{1}{2}\log(-2\theta_{2}) - \frac{1}{2}\log(2\pi)$ where $\bm{\theta} = \left(\mu/\sigma^{2} \atop -\frac{1}{2\sigma^{2}}\right)$. Verify that Property 1 holds.
+\end{exercise}
+
+\paragraph{Property 2} MLE has a nice form (through ``moment matching'').
 \begin{proof}
 \begin{align*} \argmax{\theta} \log p(\text{data} \mid \theta) &= \argmax{\theta} \left(\sum_d \theta^T\phi(x_d)\right) - NA(\theta) \\
 &= \argmax{\theta}\theta^T\underbrace{\left(\sum_d\phi(x_d)\right)}_{\text{sum of sufficient statistics}} - \underbrace{NA(\theta)}_{\text{amount of points}}
@@ -154,9 +162,9 @@ We take a derivative to obtain:
 \begin{proof}
 We first introduce some notations. 
 \begin{align*}
-\eta &\text{ - parameters}
+\eta &\coloneqq \text{parameters}
 \\
-\bar{s} &= \sum_d\phi(x_d) / N
+\bar{s} &\coloneqq \sum_d\phi(x_d) / N
 \\
 p(\text{data} \mid \eta) &\propto \exp [(N \bar s) \eta - N A(\eta)]
 \\
@@ -175,7 +183,7 @@ While exponential families generalize $p(x)$, GLMs generalize $p(y|x)$.
 \[
 p(y | x,w) = h(y)\exp\{\theta(\underbrace{\mu(x)}_{\text{predict mean}})^T\phi(y) - A(\theta)\}
 \]
-where $\mu(x) = \underbrace{g^{-1}}_{\text{squashing const}}(w^Tx + b)$
+where $\mu(x) = g^{-1}(w^Tx + b)$
 where $g$ is an appropriate linear transformation.
 
 This can be summarized through the following sequence of transformations:
@@ -186,19 +194,24 @@ $$
 \subsection{Examples of Generalized Linear Models}
 We present three examples:
 \paragraph{Example 1} Exponential family - Normal distribution with $\sigma^2 = 1$ and $g^{-1}$ is the identity function.
-This gives us the linear regression
-$$
-\mu = w^Tx + b \qquad \mathbb{R} \to \mathbb{R}.
-$$
+This gives us the linear regression:
+
+\begin{align*}
+\mu &= w^Tx + b \qquad \mathbb{R} \to \mathbb{R} \\
+\end{align*}
 
 \paragraph{Example 2} Exponential family - Bernoulli distribution and $g^{-1}$ is the sigmoid function $\sigma: \mathbb{R} \rightarrow (0, 1)$.
 Now, $\mu = \sigma(w^Tx + b)$ and $\theta = \log \left(\frac{\mu }{1 - \mu}\right)$. This is how we define logistic regression. This gives us
 
-$$p(y \mid x) = \sigma(w^Tx + b)^y(1 - \sigma(w^Tx + b))^{1-y}$$
+\begin{align*}
+p(y \mid x) &= \sigma(w^Tx + b)^y(1 - \sigma(w^Tx + b))^{1-y} \\
+\end{align*}
 
 \paragraph{Example 3} Exponential family - Categorical distribution with $g^{-1}$ as the softmax function.
 
-$\mu_c = \text{softmax}(w_c^T x + b_c)_c$
+\begin{align*}
+\mu_c &= \text{softmax}(w_c^T x + b_c)_c \\
+\theta_c &= \log \mu_c \\
+\end{align*}
 
-$\theta_c = \log \mu_c$
 \end{document}
